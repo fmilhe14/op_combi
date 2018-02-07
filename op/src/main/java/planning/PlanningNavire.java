@@ -16,7 +16,6 @@ import org.chocosolver.solver.variables.VariableFactory;
 @Setter
 public class PlanningNavire {
 
-    //TODO Penser à creer le navire 0, sans taille ni conteneurs
     //TODO faire le lien entre les setvar et les colonnes
     //TODO lien entre le planning navire et le planning grue
 
@@ -33,6 +32,7 @@ public class PlanningNavire {
 
         this.longueurQuai = longueurQuai;
         this.dateFinJournee = dateFinJournee;
+        this.solver = solver;
         int n = navires.length;
 
         this.naviresPresentsAT = new SetVar[dateFinJournee];
@@ -90,7 +90,6 @@ public class PlanningNavire {
         }
     }
 
-    //TODO : rajouter le navire 0 au position -1 et +1
     private void contraintesEspaceOccupeParLeNavireDansLePlanning() {
 
         for (int i = 0; i < dateFinJournee; i++) {
@@ -104,10 +103,34 @@ public class PlanningNavire {
                 for (int l = 0; l < longueurQuai; l++) {
 
                     BoolVar positionDebutNavireEnL = IntConstraintFactory.arithm(this.planningNavire[i][l], "=", navireId).reif();
-
                     LogOp.implies(positionDebutNavireEnL, navirePresentAT);
 
                     int tailleNavire = this.navires[i].getLongueur();
+
+                    if(l>0){
+
+                        BoolVar pasDeNavireLaPositionDAvant= IntConstraintFactory.arithm(this.planningNavire[i][l-1], "=", 0).reif();
+                        IntConstraintFactory.arithm(positionDebutNavireEnL, "=", pasDeNavireLaPositionDAvant);
+
+                        if(l>1) {
+
+                            BoolVar pasDeNavireDeuxPositionsAvant = IntConstraintFactory.arithm(this.planningNavire[i][l-2], "=", 0).reif();
+                            IntConstraintFactory.arithm(positionDebutNavireEnL, "=", pasDeNavireDeuxPositionsAvant);
+                        }
+
+                    }
+
+                    if(l<longueurQuai-1){
+
+                        BoolVar pasDeNavireLaPositionDApres= IntConstraintFactory.arithm(this.planningNavire[i][l+1], "=", 0).reif();
+                        IntConstraintFactory.arithm(positionDebutNavireEnL, "=", pasDeNavireLaPositionDApres);
+
+                        if(l < longueurQuai-2){
+
+                            BoolVar pasDeNavireDeuxPositionsApres = IntConstraintFactory.arithm(this.planningNavire[i][l+2], "=", 0).reif();
+                            IntConstraintFactory.arithm(positionDebutNavireEnL, "=", pasDeNavireDeuxPositionsApres);
+                        }
+                    }
 
                     for (int k = 0; k < tailleNavire; k++) {
 
