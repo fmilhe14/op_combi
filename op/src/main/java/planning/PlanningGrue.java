@@ -1,11 +1,14 @@
 package planning;
 
 import components.Grue;
+import components.Navire;
+import components.Navire2;
 import lombok.Getter;
 import lombok.Setter;
 import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.constraints.IntConstraintFactory;
 import org.chocosolver.solver.variables.IntVar;
+import org.chocosolver.solver.variables.SetVar;
 import org.chocosolver.solver.variables.VariableFactory;
 
 @Getter
@@ -13,6 +16,7 @@ import org.chocosolver.solver.variables.VariableFactory;
 public class PlanningGrue {
 
     private IntVar[][] planningGrue;
+    private Navire2[] navires;
     private Grue[] grues;
     private Solver solver;
 
@@ -20,30 +24,20 @@ public class PlanningGrue {
     private int nbGrues;
     private int longueurQuai;
 
-    public PlanningGrue(int dateFinJournee, int nbGrues, int longueurQuai, Solver solver, Grue[] grues) {
+    public PlanningGrue(int dateFinJournee, int nbGrues, int longueurQuai, Solver solver, Navire2[] navires) {
 
         this.solver = solver;
         this.nbGrues = nbGrues;
         this.longueurQuai = longueurQuai;
         this.dateFinJournee = dateFinJournee;
-        this.grues = grues;
+        this.navires = navires;
+        this.grues = this.navires[0].getGrues();
 
         this.planningGrue = initialiserPlanningGrues(dateFinJournee, nbGrues);
 
-        contraintesGruesNePeuventPasSeCroiser(dateFinJournee, nbGrues);
- //       contrainteUnOuvrierParGrue();
+        contraintesGruesNePeuventPasSeCroiser();
+        contrainteUneGrueNePeutTravaillerQueSurUnNavireALaFois();
 
-
-    }
-
-    private void contraintesGruesNePeuventPasSeCroiser(int dateFinJournee, int nbGrues) {
-
-        for (int i = 0; i < dateFinJournee; i++) {
-            for (int j = 0; j < nbGrues; j++) {
-
-                IntConstraintFactory.arithm(this.planningGrue[i][j], "<=", this.planningGrue[i][j + 1]);
-            }
-        }
     }
 
     private IntVar[][] initialiserPlanningGrues(int dateFinJournee, int nbGrues) {
@@ -60,15 +54,21 @@ public class PlanningGrue {
         return planning;
     }
 
-    private void contrainteUnOuvrierParGrue(){
+    private void contraintesGruesNePeuventPasSeCroiser() {
 
-        IntVar[] ouvriers = new IntVar[grues.length];
+        if(nbGrues > 1) {
 
-        for(int i = 0; i<ouvriers.length; i++){
+            for(int i = 0; i < nbGrues - 1; i++){
 
-            ouvriers[i] = this.grues[i].getOuvrier();
+                IntConstraintFactory.arithm(this.grues[i].getPosition(), "<" , this.grues[i+1].getPosition());
+
+                }
         }
+    }
 
-        this.solver.post(IntConstraintFactory.alldifferent(ouvriers));
+    private void contrainteUneGrueNePeutTravaillerQueSurUnNavireALaFois(){
+
+    //    SetVar[] = new SetVar[navires.length]
+
     }
 }

@@ -18,7 +18,6 @@ import org.chocosolver.solver.variables.VariableFactory;
 public class Navire {
 
     private int id;
-
     private int nbConteneursInitial;
 
     private IntVar xDateArrivee;
@@ -47,8 +46,8 @@ public class Navire {
         this.grues = grues;
         int nbGrues = this.grues.length;
 
-        this.positionDebut = VariableFactory.bounded("position_navire_" + id, 0, longueurDuQuai - 1, solver);
-        this.xDateArrivee = VariableFactory.bounded("date_arrivee_navire_" + id, 0, dateFinJournee, solver);
+        this.positionDebut = VariableFactory.bounded("position_navire_" + id, 0, longueurDuQuai-longueur, solver);
+        this.xDateArrivee = VariableFactory.bounded("date_arrivee_navire_" + id, 0, dateFinJournee-1, solver);
 
         int[] enveloppeGrues = new int[nbGrues];
 
@@ -57,8 +56,8 @@ public class Navire {
         this.gruesPresentes = VariableFactory.set("grues_pour_navire_" + id, enveloppeGrues, new int[]{}, solver);
 
         vitesse();
-        tempsResteAQuai(dateFinJournee);
-        navireDoitPartirAvantLaFinDeLaJournee(dateFinJournee);
+    //    tempsResteAQuai(dateFinJournee);
+    ///    navireDoitPartirAvantLaFinDeLaJournee(dateFinJournee);
         laPositionDuneGrueQuiTravailleSurUnNavireEstComprisEntreLeDebutDunNavireEtLaFinDeCeluiCi();
     }
 
@@ -90,7 +89,7 @@ public class Navire {
 
     private void navireDoitPartirAvantLaFinDeLaJournee(int dateFinJournee) {
 
-        solver.post(IntConstraintFactory.arithm(this.getXDateArrivee(), "+", this.getTempsResteAQuai(), "<=", dateFinJournee));
+        solver.post(IntConstraintFactory.arithm(this.getXDateArrivee(), "+", this.getTempsResteAQuai(), "<", dateFinJournee));
 
     }
 

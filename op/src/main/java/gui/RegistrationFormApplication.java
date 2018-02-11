@@ -13,6 +13,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -20,6 +21,11 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 import org.chocosolver.solver.Solver;
+import org.chocosolver.solver.trace.Chatterbox;
+import org.chocosolver.solver.variables.VariableFactory;
+import planning.GlobalPlanning;
+import planning.PlanningGrue;
+import planning.PlanningNavire;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -45,7 +51,7 @@ public class RegistrationFormApplication extends Application {
         this.navires = new ArrayList<>();
 
         this.currentIdGrue = 0;
-        this.currentIdNavire = 0;
+        this.currentIdNavire = 1;
         this.solver = new Solver("Résolution planning");
 
 
@@ -113,11 +119,16 @@ public class RegistrationFormApplication extends Application {
         tailleDuQuai.setPrefHeight(40);
         gridPane.add(tailleDuQuai, 1, 1);
 
-        tailleDuQuai.setOnAction(new EventHandler<ActionEvent>() {
+        tailleDuQuai.setOnKeyPressed(new EventHandler<KeyEvent>() {
 
             @Override
-            public void handle(ActionEvent e) {
+            public void handle(KeyEvent e) {
+            try {
                 longueurQuai = Integer.parseInt(tailleDuQuai.getText());
+            }
+            catch(NumberFormatException a){
+
+            }
             }
         });
 
@@ -131,11 +142,16 @@ public class RegistrationFormApplication extends Application {
         heureJournee.setPrefHeight(40);
         gridPane.add(heureJournee, 1, 2);
 
-        heureJournee.setOnAction(new EventHandler<ActionEvent>() {
+        heureJournee.setOnKeyPressed(new EventHandler<KeyEvent>() {
 
             @Override
-            public void handle(ActionEvent e) {
-                dateFinDeJournee = Integer.parseInt(heureJournee.getText()) * 4;
+            public void handle(KeyEvent e) {
+                try {
+                    dateFinDeJournee = Integer.parseInt(heureJournee.getText()) * 4;
+                }
+                catch(NumberFormatException a){
+
+                }
             }
         });
 
@@ -208,10 +224,23 @@ public class RegistrationFormApplication extends Application {
 
                 else {
 
-                    navires.add(new Navire(0, 0, 0, 0,
-                            0, longueurQuai, dateFinDeJournee, solver, grues.toArray(new Grue[grues.size()])));
+                    Navire navire0 = new Navire(0, 0, 0, 0,
+                            0, longueurQuai, dateFinDeJournee, solver, grues.toArray(new Grue[grues.size()]));
+
+                    navire0.setXDateArrivee(VariableFactory.fixed(0, solver));
+                    navire0.setTempsResteAQuai(VariableFactory.fixed(dateFinDeJournee, solver));
+
+                    navires.add(navire0);
+
                     navires.sort(Comparator.comparing(Navire::getId));
 
+                    PlanningNavire planningNavire = new PlanningNavire(longueurQuai, dateFinDeJournee, navires.toArray(new Navire[navires.size()]), solver);
+           //         PlanningGrue planningGrue = new PlanningGrue(dateFinDeJournee, grues.size(), longueurQuai, solver, grues.toArray(new Grue[grues.size()]));
+
+           //         GlobalPlanning globalPlanning = new GlobalPlanning(planningNavire, planningGrue, solver);
+
+                    solver.findSolution();
+                    Chatterbox.printStatistics(solver);
                 }
             }
         });
