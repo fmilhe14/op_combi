@@ -14,16 +14,22 @@ public class Grue {
 
     private int id;
     private int capacite;
-    private IntVar position;
-    private IntVar ouvrier;
+    private int dureeDUneJournee;
+    private IntVar[] positions;
+    private Ouvrier[] ouvriers;
 
-    public Grue(int id, int capacite, int nbOuvrier, int longueurQuai, Solver solver){
+    public Grue(int id, int capacite, int longueurQuai, int dureeDUneJournee, Solver solver) {
 
         this.id = id;
         this.capacite = capacite;
+        this.dureeDUneJournee = dureeDUneJournee;
+        this.positions = new IntVar[dureeDUneJournee];
 
-        this.position = VariableFactory.bounded("position_grue_"+id, 0, longueurQuai, solver);
-        this.ouvrier = VariableFactory.bounded("ouvrier_sur_la_grue_"+id, 0, nbOuvrier, solver);
+        for (int t = 0; t < this.dureeDUneJournee; t++) {
+
+            this.positions[t] = VariableFactory.bounded("position_grue_" + id, 0, longueurQuai, solver);
+        }
+
 
     }
 }

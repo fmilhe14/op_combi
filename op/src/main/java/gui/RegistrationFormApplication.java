@@ -23,8 +23,6 @@ import javafx.stage.Stage;
 import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.trace.Chatterbox;
 import org.chocosolver.solver.variables.VariableFactory;
-import planning.GlobalPlanning;
-import planning.PlanningGrue;
 import planning.PlanningNavire;
 
 import java.util.ArrayList;
@@ -225,16 +223,16 @@ public class RegistrationFormApplication extends Application {
                 else {
 
                     Navire navire0 = new Navire(0, 0, 0, 0,
-                            0, longueurQuai, dateFinDeJournee, solver, grues.toArray(new Grue[grues.size()]));
+                            0, longueurQuai, dateFinDeJournee, grues.toArray(new Grue[grues.size()]), solver);
 
-                    navire0.setXDateArrivee(VariableFactory.fixed(0, solver));
+                    navire0.setDateArrivee(VariableFactory.fixed(0, solver));
                     navire0.setTempsResteAQuai(VariableFactory.fixed(dateFinDeJournee, solver));
 
                     navires.add(navire0);
 
                     navires.sort(Comparator.comparing(Navire::getId));
 
-                    PlanningNavire planningNavire = new PlanningNavire(longueurQuai, dateFinDeJournee, navires.toArray(new Navire[navires.size()]), solver);
+                     PlanningNavire planningNavire = new PlanningNavire(longueurQuai, dateFinDeJournee, navires.toArray(new Navire[navires.size()]), solver);
            //         PlanningGrue planningGrue = new PlanningGrue(dateFinDeJournee, grues.size(), longueurQuai, solver, grues.toArray(new Grue[grues.size()]));
 
            //         GlobalPlanning globalPlanning = new GlobalPlanning(planningNavire, planningGrue, solver);
@@ -416,8 +414,8 @@ public class RegistrationFormApplication extends Application {
             public void handle(ActionEvent e) {
 
                 Navire navire = new Navire(currentIdNavire, Integer.parseInt(nbConteneurs.getText()), Integer.parseInt(departPrevu.getText()),
-                        Integer.parseInt(coutDeRetard.getText()), Integer.parseInt(tailleDuNavire.getText()), longueurQuai, dateFinDeJournee, solver,
-                        grues.toArray(new Grue[grues.size()]));
+                        Integer.parseInt(coutDeRetard.getText()), Integer.parseInt(tailleDuNavire.getText()), longueurQuai, dateFinDeJournee,
+                        grues.toArray(new Grue[grues.size()]), solver);
                 navires.add(navire);
                 currentIdNavire++;
                 secondStage.close();

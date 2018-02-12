@@ -14,13 +14,12 @@ public class Ouvrier {
 
     private int id;
     private int temps;
-    private IntVar dateDebut;
+    private IntVar dureeDUneJournee;
 
     public Ouvrier(int id, int temps, int dateFinJournee, Solver solver){
 
         this.id = id;
         this.temps = temps;
-        this.dateDebut = VariableFactory.bounded("date_debut_travail_ouvrier_"+id, 0, dateFinJournee, solver);
-
+        this.dureeDUneJournee = VariableFactory.bounded("date_debut_travail_ouvrier_"+id, 1, dateFinJournee, solver);
     }
 }
