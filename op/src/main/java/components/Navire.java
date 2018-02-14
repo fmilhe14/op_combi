@@ -12,9 +12,6 @@ import org.chocosolver.solver.variables.IntVar;
 import org.chocosolver.solver.variables.SetVar;
 import org.chocosolver.solver.variables.VariableFactory;
 
-@Getter
-@Setter
-@EqualsAndHashCode
 public class Navire {
 
     private int id;
@@ -31,7 +28,8 @@ public class Navire {
     private IntVar[] positionsDuNavire;
 
     private SetVar[] gruesPresentes;
-    private Grue[] grues;
+
+	private Grue[] grues;
 
     private Solver solver;
 
@@ -50,6 +48,7 @@ public class Navire {
         int[] enveloppeGrues = new int[grues.length];
         for (int i = 0; i < grues.length; i++) enveloppeGrues[i] = i;
 
+        //Set des grues présentes à tout t sur le navire
         this.gruesPresentes = new SetVar[dureeDUneJournee];
 
         for (int t = 0; t < this.dureeDUneJournee; t++)
@@ -57,14 +56,28 @@ public class Navire {
 
         this.dateArrivee = VariableFactory.bounded("date_arrivee_du_navire_" + this.id, 1, this.dureeDUneJournee, this.solver);
 
+        //Position du navire comprise entre 0 et la longueur du quai, la position 0 correspond au planning non placé
         initialiserPositionsDuNavire();
+
+        //Calcul de la vitesse de chargement/dechargement des grues placées sur le navire: somme des capacités des grues placées sur le navire
         initialiserVitesse();
+
+        //Contrainte qui dit que le temps reste à quai * la vitesse de chargement/dechargement est égale au nombre de conteneurs (ne fonctionne que si nbConteneurs et vitesseDesGrues sont multiples)
         tempsResteAQuai(this.dureeDUneJournee);
 
+        //Si le navire est à quai, il y a au moins une grue qui travaille dessus
         contrainteGruesQuandNavireAQuai();
+
+        //Dans la liste des positions du navire : si le navire est présent, alors dans cette liste, à t, apparait la valeur de la position de debut du navire, s'il n'est pas là : 0
         contraintePositionTempsResteAQuai();
+
+        //Position des grues qui travaillent sur le navire comprise entre [debutDuNavire, debutDuNavire + longueurNavire]
         contraintePositionGrueAT();
+
+        //La position de début d'un navire est fonction de sa longueur (on ne peut pas le placer sur une unité, s'il ne rentre pas)
         contrainteEspaceOccupe();
+
+        //Tous les navires doivent apparaître dans le planning
         contrainteNavireDoitPartirAvantLaFinDeLaJournee();
     }
 
@@ -213,16 +226,115 @@ public class Navire {
         solver.post(IntConstraintFactory.arithm(dateArrivee, "+", tempsResteAQuai, "<=", dureeDUneJournee));
     }
 
-    public static void main(String[] args) {
+    public int getId() {
+        return id;
+    }
 
-        Solver solver = new Solver("");
+    public void setId(int id) {
+        this.id = id;
+    }
 
-        Navire navire = new Navire(1, 10, 2, 5, 1, 5, 10,
-                new Grue[]{new Grue(0, 5, 5, 10, solver)}, solver);
+    public int getNbConteneurs() {
+        return nbConteneurs;
+    }
 
-        solver.findSolution();
-        Chatterbox.printStatistics(solver);
-        solver.getVars();
+    public void setNbConteneurs(int nbConteneurs) {
+        this.nbConteneurs = nbConteneurs;
+    }
 
+    public int getLongueur() {
+        return longueur;
+    }
+
+    public void setLongueur(int longueur) {
+        this.longueur = longueur;
+    }
+
+    public int getLongueurDuQuai() {
+        return longueurDuQuai;
+    }
+
+    public void setLongueurDuQuai(int longueurDuQuai) {
+        this.longueurDuQuai = longueurDuQuai;
+    }
+
+    public int getDateDepartPrevue() {
+        return dateDepartPrevue;
+    }
+
+    public void setDateDepartPrevue(int dateDepartPrevue) {
+        this.dateDepartPrevue = dateDepartPrevue;
+    }
+
+    public int getCoutPenalite() {
+        return coutPenalite;
+    }
+
+    public void setCoutPenalite(int coutPenalite) {
+        this.coutPenalite = coutPenalite;
+    }
+
+    public int getDureeDUneJournee() {
+        return dureeDUneJournee;
+    }
+
+    public void setDureeDUneJournee(int dureeDUneJournee) {
+        this.dureeDUneJournee = dureeDUneJournee;
+    }
+
+    public IntVar getDateArrivee() {
+        return dateArrivee;
+    }
+
+    public void setDateArrivee(IntVar dateArrivee) {
+        this.dateArrivee = dateArrivee;
+    }
+
+    public IntVar[] getVitesseDesGrues() {
+        return vitesseDesGrues;
+    }
+
+    public void setVitesseDesGrues(IntVar[] vitesseDesGrues) {
+        this.vitesseDesGrues = vitesseDesGrues;
+    }
+
+    public IntVar getTempsResteAQuai() {
+        return tempsResteAQuai;
+    }
+
+    public void setTempsResteAQuai(IntVar tempsResteAQuai) {
+        this.tempsResteAQuai = tempsResteAQuai;
+    }
+
+    public IntVar[] getPositionsDuNavire() {
+        return positionsDuNavire;
+    }
+
+    public void setPositionsDuNavire(IntVar[] positionsDuNavire) {
+        this.positionsDuNavire = positionsDuNavire;
+    }
+
+    public SetVar[] getGruesPresentes() {
+        return gruesPresentes;
+    }
+
+    public void setGruesPresentes(SetVar[] gruesPresentes) {
+        this.gruesPresentes = gruesPresentes;
+    }
+
+    public Grue[] getGrues() {
+        return grues;
+    }
+
+    public void setGrues(Grue[] grues) {
+        this.grues = grues;
+    }
+
+    public Solver getSolver() {
+        return solver;
+    }
+
+    public void setSolver(Solver solver) {
+        this.solver = solver;
     }
 }

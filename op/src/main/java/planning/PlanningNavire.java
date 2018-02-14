@@ -16,8 +16,7 @@ import org.chocosolver.solver.variables.VariableFactory;
 public class PlanningNavire {
 
     private IntVar[][] planningNavire;
-
-    private Navire[] navires; //Tous les navires de la journée, ordonnés par ID
+	private Navire[] navires; //Tous les navires de la journée, ordonnés par ID
     private int longueurQuai;
     private int dureeDUneJournee;
 
@@ -46,9 +45,11 @@ public class PlanningNavire {
                 this.planningNavire[t][j] = VariableFactory.bounded("navire_present_a_la_position_" + j + "_a_t_" + t, 0, n, this.solver);
             }
 
+            //Si dans la liste des positions d'un navire, sa valeur est à 0, alors on ne le met pas dans le planning à t
             contrainteSiUnNavireNestPasPositionneATAlorsIlNestPasDansLePlanningAT(t);
         }
 
+        //Place les navires sur le planning, aux bonnes positions
         contrainteLiantPlanningEtNavires();
     }
 
@@ -99,42 +100,49 @@ public class PlanningNavire {
 
                         solver.post(IntConstraintFactory.arithm(navireEnPosEtPos1PasDansLeBonIntervalle, "<=", planningEnPos1DifferentDePos));
 
-
-                        if(pos1 > 0){
-
-                            BoolVar planningPos1Moins1EgalA0 = IntConstraintFactory.arithm(this.planningNavire[t][pos1-1], "=", 0).reif();
-                       //     solver.post(IntConstraintFactory.arithm(navireEnPosEtPos1PasDansLeBonIntervalle, "<=", planningPos1Moins1EgalA0));
-
-                            if(pos1 > 1){
-
-                                BoolVar planningPos1Moins2EgalA0 = IntConstraintFactory.arithm(this.planningNavire[t][pos1-2], "=", 0).reif();
-                        //        solver.post(IntConstraintFactory.arithm(navireEnPosEtPos1PasDansLeBonIntervalle, "<=", planningPos1Moins2EgalA0));
-                            }
-                        }
                     }
                 }
             }
         }
     }
 
-    public static void main(String[] args) {
+    public IntVar[][] getPlanningNavire() {
+        return planningNavire;
+    }
 
-        Solver solver = new Solver("");
+    public void setPlanningNavire(IntVar[][] planningNavire) {
+        this.planningNavire = planningNavire;
+    }
 
+    public Navire[] getNavires() {
+        return navires;
+    }
 
-        Navire navire = new Navire(1, 5, 2, 10, 1, 1, 3,
-                new Grue[]{new Grue(0, 5, 10, 3, solver),
-                        new Grue(1, 10, 10, 3, solver)}, solver);
+    public void setNavires(Navire[] navires) {
+        this.navires = navires;
+    }
 
-        Navire navire1 = new Navire(2, 15, 3, 10, 1, 1, 3,
-                new Grue[]{new Grue(0, 5, 10, 3, solver),
-                        new Grue(1, 10, 10, 3, solver)}, solver);
+    public int getLongueurQuai() {
+        return longueurQuai;
+    }
 
+    public void setLongueurQuai(int longueurQuai) {
+        this.longueurQuai = longueurQuai;
+    }
 
-        PlanningNavire planningNavire = new PlanningNavire(10, 3, new Navire[]{navire, navire1}, solver);
+    public int getDureeDUneJournee() {
+        return dureeDUneJournee;
+    }
 
-        solver.findSolution();
-        Chatterbox.printStatistics(solver);
-        solver.getVars();
+    public void setDureeDUneJournee(int dureeDUneJournee) {
+        this.dureeDUneJournee = dureeDUneJournee;
+    }
+
+    public Solver getSolver() {
+        return solver;
+    }
+
+    public void setSolver(Solver solver) {
+        this.solver = solver;
     }
 }

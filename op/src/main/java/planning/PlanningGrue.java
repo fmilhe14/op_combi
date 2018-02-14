@@ -1,20 +1,16 @@
 package planning;
 
+
 import components.Grue;
 import components.Navire;
-import lombok.Getter;
-import lombok.Setter;
 import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.constraints.IntConstraintFactory;
 import org.chocosolver.solver.constraints.set.SetConstraintsFactory;
-import org.chocosolver.solver.trace.Chatterbox;
 import org.chocosolver.solver.variables.BoolVar;
 import org.chocosolver.solver.variables.IntVar;
 import org.chocosolver.solver.variables.SetVar;
 import org.chocosolver.solver.variables.VariableFactory;
 
-@Getter
-@Setter
 public class PlanningGrue {
 
     private IntVar[][] planningGrue;
@@ -37,8 +33,13 @@ public class PlanningGrue {
 
         this.planningGrue = initialiserPlanningGrues(dureeDUneJournee, nbGrues);
 
+        //Les grues ne peuvent pas se croiser
         contraintesGruesNePeuventPasSeCroiser();
+
+        //Une grue ne peut travailler
         contrainteUneGrueNePeutTravaillerQueSurUnNavireALaFois();
+
+        //Apres le depart d'un navire, la grue reste à sa position et ne travaille pas pendant 15min
         contrainteUneGrueFaitUnePauseApresAvoirDechargeUnNavire();
     }
 
@@ -110,72 +111,61 @@ public class PlanningGrue {
         }
     }
 
-    public static void main(String[] args) {
+    public IntVar[][] getPlanningGrue() {
+        return planningGrue;
+    }
 
-        Solver solver = new Solver("");
+    public void setPlanningGrue(IntVar[][] planningGrue) {
+        this.planningGrue = planningGrue;
+    }
 
-        int longueurQuai = 12;
-        int dureeDuneJournee = 32;
+    public Navire[] getNavires() {
+        return navires;
+    }
 
-        Grue[] grues = new Grue[]{new Grue(0, 5, longueurQuai, dureeDuneJournee, solver),
-                new Grue(1, 10, longueurQuai, dureeDuneJournee, solver),
-                new Grue(2, 5, longueurQuai, dureeDuneJournee, solver),
-                new Grue(3, 5, longueurQuai, dureeDuneJournee, solver),
-                new Grue(4, 15, longueurQuai, dureeDuneJournee, solver),
-                new Grue(5, 5, longueurQuai, dureeDuneJournee, solver),
-                new Grue(6, 25, longueurQuai, dureeDuneJournee, solver),
-                new Grue(7, 5, longueurQuai, dureeDuneJournee, solver)
-        };
+    public void setNavires(Navire[] navires) {
+        this.navires = navires;
+    }
 
-        Navire navire = new Navire(1, 25, 2, longueurQuai, 1, 1, dureeDuneJournee,
-                grues, solver);
+    public Grue[] getGrues() {
+        return grues;
+    }
 
-        Navire navire1 = new Navire(2, 35, 3, longueurQuai, 1, 1, dureeDuneJournee,
-                grues, solver);
+    public void setGrues(Grue[] grues) {
+        this.grues = grues;
+    }
 
-        Navire navire2 = new Navire(3, 60, 2, longueurQuai, 1, 1, dureeDuneJournee,
-                grues, solver);
+    public Solver getSolver() {
+        return solver;
+    }
 
-        Navire navire3 = new Navire(4, 50, 5, longueurQuai, 1, 1, dureeDuneJournee,
-                grues, solver);
+    public void setSolver(Solver solver) {
+        this.solver = solver;
+    }
 
-        Navire navire4 = new Navire(5, 15, 3, longueurQuai, 1, 1, dureeDuneJournee,
-                grues, solver);
+    public int getDureeDUneJournee() {
+        return dureeDUneJournee;
+    }
 
-        Navire navire5 = new Navire(6, 30, 4, longueurQuai, 1, 1, dureeDuneJournee,
-                grues, solver);
+    public void setDureeDUneJournee(int dureeDUneJournee) {
+        this.dureeDUneJournee = dureeDUneJournee;
+    }
 
-        Navire navire6 = new Navire(7, 10, 2, longueurQuai, 1, 1, dureeDuneJournee,
-                grues, solver);
+    public int getNbGrues() {
+        return nbGrues;
+    }
 
-        Navire navire7 = new Navire(8, 25, 2, longueurQuai, 1, 1, dureeDuneJournee,
-                grues, solver);
+    public void setNbGrues(int nbGrues) {
+        this.nbGrues = nbGrues;
+    }
 
-        Navire navire8 = new Navire(9, 15, 2, longueurQuai, 1, 1, dureeDuneJournee,
-                grues, solver);
+    public int getLongueurQuai() {
+        return longueurQuai;
+    }
 
-        Navire navire9 = new Navire(10, 5, 4, longueurQuai, 1, 1, dureeDuneJournee,
-                grues, solver);
-
-        Navire navire10 = new Navire(11, 20, 2, longueurQuai, 1, 1, dureeDuneJournee,
-                grues, solver);
-
-
-        Navire[] navires = new Navire[]{navire, navire1, navire2, navire3, navire4, navire5, navire6, navire7, navire8, navire9, navire10};
-
-        PlanningNavire planningNavire = new PlanningNavire(longueurQuai, dureeDuneJournee, navires, solver);
-
-        PlanningGrue planningGrue = new PlanningGrue(dureeDuneJournee, longueurQuai, solver, navires);
-
-        long start = System.currentTimeMillis();
-        long time;
-
-        solver.findSolution();
-
-        time = System.currentTimeMillis();
-        System.out.println(time - start);
-
-        Chatterbox.printStatistics(solver);
+    public void setLongueurQuai(int longueurQuai) {
+        this.longueurQuai = longueurQuai;
     }
 }
+
 

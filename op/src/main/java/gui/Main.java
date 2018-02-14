@@ -3,32 +3,39 @@ package gui;
 import components.Grue;
 import components.Navire;
 import javafx.application.Application;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.trace.Chatterbox;
 import org.chocosolver.solver.variables.VariableFactory;
+import planning.GlobalPlanning;
+import planning.PlanningGrue;
 import planning.PlanningNavire;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 
-public class RegistrationFormApplication extends Application {
+public class Main extends Application {
 
     private ArrayList<Grue> grues;
     private ArrayList<Navire> navires;
@@ -117,16 +124,17 @@ public class RegistrationFormApplication extends Application {
         tailleDuQuai.setPrefHeight(40);
         gridPane.add(tailleDuQuai, 1, 1);
 
-        tailleDuQuai.setOnKeyPressed(new EventHandler<KeyEvent>() {
-
+        tailleDuQuai.focusedProperty().addListener(new ChangeListener<Boolean>() {
             @Override
-            public void handle(KeyEvent e) {
-            try {
-                longueurQuai = Integer.parseInt(tailleDuQuai.getText());
-            }
-            catch(NumberFormatException a){
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if(!newValue) {
+                    try {
+                        longueurQuai = Integer.parseInt(tailleDuQuai.getText());
+                    }
+                    catch (NumberFormatException o){
 
-            }
+                    }
+                }
             }
         });
 
@@ -140,15 +148,16 @@ public class RegistrationFormApplication extends Application {
         heureJournee.setPrefHeight(40);
         gridPane.add(heureJournee, 1, 2);
 
-        heureJournee.setOnKeyPressed(new EventHandler<KeyEvent>() {
-
+        heureJournee.focusedProperty().addListener(new ChangeListener<Boolean>() {
             @Override
-            public void handle(KeyEvent e) {
-                try {
-                    dateFinDeJournee = Integer.parseInt(heureJournee.getText()) * 4;
-                }
-                catch(NumberFormatException a){
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if(!newValue) {
+                    try {
+                        dateFinDeJournee = Integer.parseInt(heureJournee.getText())*4;
+                    }
+                    catch (NumberFormatException o){
 
+                    }
                 }
             }
         });
@@ -222,22 +231,40 @@ public class RegistrationFormApplication extends Application {
 
                 else {
 
-                    Navire navire0 = new Navire(0, 0, 0, 0,
-                            0, longueurQuai, dateFinDeJournee, grues.toArray(new Grue[grues.size()]), solver);
-
-                    navire0.setDateArrivee(VariableFactory.fixed(0, solver));
-                    navire0.setTempsResteAQuai(VariableFactory.fixed(dateFinDeJournee, solver));
-
-                    navires.add(navire0);
-
                     navires.sort(Comparator.comparing(Navire::getId));
 
                      PlanningNavire planningNavire = new PlanningNavire(longueurQuai, dateFinDeJournee, navires.toArray(new Navire[navires.size()]), solver);
-           //         PlanningGrue planningGrue = new PlanningGrue(dateFinDeJournee, grues.size(), longueurQuai, solver, grues.toArray(new Grue[grues.size()]));
+                     PlanningGrue planningGrue = new PlanningGrue(dateFinDeJournee, longueurQuai,solver, navires.toArray(new Navire[navires.size()]));
 
-           //         GlobalPlanning globalPlanning = new GlobalPlanning(planningNavire, planningGrue, solver);
+
+                    GlobalPlanning globalPlanning = new GlobalPlanning(planningNavire, planningGrue, solver);
 
                     solver.findSolution();
+
+                    String[][] planningGrueMatrix = new String[planningGrue.getPlanningGrue().length+1][planningGrue.getPlanningGrue()[0].length];
+
+                    for(int k = 0; k < planningGrue.getPlanningGrue()[0].length; k++) planningGrueMatrix[0][k] = ""+k ;
+
+                    for(int i = 0; i < planningGrue.getPlanningGrue().length; i++){
+                        for(int j = 0; j < planningGrue.getPlanningGrue()[0].length; j++){
+                            planningGrueMatrix[i][j] = ""+planningGrue.getPlanningGrue()[i][j].getValue();
+                        }
+                    }
+
+                    String[][] planningNavireMatrix = new String[planningNavire.getPlanningNavire().length+1][planningNavire.getPlanningNavire()[0].length];
+
+
+                    for(int k = 0; k < planningNavire.getPlanningNavire()[0].length; k++) planningNavireMatrix[0][k] = ""+k ;
+
+                    for(int i = 0; i < planningNavire.getPlanningNavire().length; i++){
+                        for(int j = 0; j < planningNavire.getPlanningNavire()[0].length; j++){
+                            planningNavireMatrix[i][j] = ""+planningNavire.getPlanningNavire()[i][j].getValue();
+                        }
+                    }
+
+                    drawMatrix(planningGrueMatrix, primaryStage, "Planning Grue");
+                    drawMatrix(planningNavireMatrix, primaryStage, "Planning Navire");
+
                     Chatterbox.printStatistics(solver);
                 }
             }
@@ -304,7 +331,7 @@ public class RegistrationFormApplication extends Application {
             @Override
             public void handle(ActionEvent e) {
 
-                Grue grue = new Grue(currentIdGrue, Integer.parseInt(capaciteGrue.getText()), 0, longueurQuai, solver);
+                Grue grue = new Grue(currentIdGrue, Integer.parseInt(capaciteGrue.getText()), longueurQuai, dateFinDeJournee, solver);
                 grues.add(grue);
                 currentIdGrue++;
                 secondStage.close();
@@ -318,6 +345,40 @@ public class RegistrationFormApplication extends Application {
         secondStage.setTitle("Second Form");
         secondStage.show();
 
+
+    }
+
+    private void drawMatrix(String[][] array, Stage primaryStage, String title){
+
+        Stage secondStage = new Stage();
+
+        secondStage.setTitle(title);
+
+        GridPane root = new GridPane();
+        ObservableList<String[]> data = FXCollections.observableArrayList();
+        data.addAll(Arrays.asList(array));
+        data.remove(0);//remove titles from data
+        TableView<String[]> table = new TableView<>();
+        for (int i = 0; i < array[0].length; i++) {
+            TableColumn tc = new TableColumn(array[0][i]);
+            final int colNo = i;
+            tc.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<String[], String>, ObservableValue<String>>() {
+                @Override
+                public ObservableValue<String> call(TableColumn.CellDataFeatures<String[], String> p) {
+                    return new SimpleStringProperty((p.getValue()[colNo]));
+                }
+            });
+            tc.setPrefWidth(90);
+            table.getColumns().add(tc);
+        }
+        table.setItems(data);
+        root.getChildren().add(table);
+
+        Scene secondScene = new Scene(root, 500, 500);
+
+        secondStage.setScene(secondScene);
+        primaryStage.close();
+        secondStage.show();
 
     }
 
@@ -413,8 +474,9 @@ public class RegistrationFormApplication extends Application {
             @Override
             public void handle(ActionEvent e) {
 
-                Navire navire = new Navire(currentIdNavire, Integer.parseInt(nbConteneurs.getText()), Integer.parseInt(departPrevu.getText()),
-                        Integer.parseInt(coutDeRetard.getText()), Integer.parseInt(tailleDuNavire.getText()), longueurQuai, dateFinDeJournee,
+                Navire navire = new Navire(currentIdNavire, Integer.parseInt(nbConteneurs.getText()), Integer.parseInt(tailleDuNavire.getText()), longueurQuai,
+                        Integer.parseInt(departPrevu.getText()),
+                        Integer.parseInt(coutDeRetard.getText()),  dateFinDeJournee,
                         grues.toArray(new Grue[grues.size()]), solver);
                 navires.add(navire);
                 currentIdNavire++;
